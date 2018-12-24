@@ -22,7 +22,8 @@ void TestParse()
 	try
 	{
 		CFG::CFG cfg(n_terminal_set, terminal_set, products, "S");
-		std::cout << "Ïû³ý×óµÝ¹éÖ®Ç°: " << std::endl << cfg << std::endl << "Ïû³ý×óµÝ¹éºó: " << std::endl << cfg.RemoveRecursive();
+		std::cout << "Ïû³ý×óµÝ¹éÖ®Ç°: " << std::endl << cfg << std::endl;
+		std::cout << "Ïû³ý×óµÝ¹éºó: " << std::endl << cfg.RemoveRecursive();
 	}
 	catch (const std::exception &exp)
 	{

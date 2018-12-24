@@ -142,6 +142,29 @@ CFG::CFG::CFG(const std::set<std::string> n_terminal_set,
 
 			}
 
+
+			if (i + 1 == productions.length())
+			{
+				if (cfg_symbolic_body != "")
+				{
+					stringstream ss;
+					ss << "未知的文法符号: " << cfg_symbolic_body;
+					throw std::runtime_error(ss.str().c_str());
+				}
+
+				if (product_body.empty())
+				{
+					stringstream ss;
+					ss << "未知的文法符号: " << cfg_symbolic_body;
+					throw std::runtime_error(ss.str().c_str());
+				}
+
+				product->AppendBody(product_body);
+				product_body.clear();
+
+				AppendProduct(product); // 添加产生式
+				parse_status = PARSE_CFG_STATUS_HEADER; // 切换分析状态
+			}
 			break;
 		}
 		}
@@ -220,12 +243,13 @@ CFG::CFG &CFG::CFG::RemoveRecursive()
 
 		for (size_t k = 0; k < productions_[i]->Body().size(); )
 		{
+			std::string product_header = productions_[i]->Header() + "`";
 			// 左递归产生式 E -> E + E 转换为 E` -> +EE`
 			if (productions_[i]->Header() == productions_[i]->Body()[k][0]->Name())
 			{
 				assert(productions_[i]->Body()[k].size() > 1); // 断言至少有两个符号
 				ProductionBody pb; // 新的产生式体
-				std::string product_header = productions_[i]->Header() + "`";
+				
 
 				// 获取 +E
 				pb.insert(pb.end(), productions_[i]->Body()[k].begin() + 1, productions_[i]->Body()[k].end());
@@ -239,11 +263,12 @@ CFG::CFG &CFG::CFG::RemoveRecursive()
 				// 删除原先的产生式
 				auto iter = productions_[i]->Body().erase(productions_[i]->Body().begin() + k);
 				k = iter - productions_[i]->Body().begin();
+
+				n_terminal_set_.insert(product_header);
 				continue;
 			}
 			else // 非递归产生式
 			{
-				std::string product_header = productions_[i]->Header() + "`";
 				if (productions_[i]->Body()[k][0]->Name() == "ε") // 如果是空的话
 				{
 					ProductionBody pb; // 新的产生式体
@@ -254,6 +279,13 @@ CFG::CFG &CFG::CFG::RemoveRecursive()
 					productions_[i]->Body()[k].push_back(new GrammarSymbolic(product_header, SYMBOLIC_TYPE_N_TERMINAL));
 				}
 			}
+
+			// 设置新的产生式				
+			auto new_product = std::shared_ptr<Production>(new Production(product_header));
+			ProductionBody pb; // 新的产生式体
+			pb.push_back(new GrammarSymbolic("ε", SYMBOLIC_TYPE_TERMINAL));
+			new_product->AppendBody(pb);
+			this->AppendProduct(new_product); // 添加新的产生式
 
 			k++;
 		}
