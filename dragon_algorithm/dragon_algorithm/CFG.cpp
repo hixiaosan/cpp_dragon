@@ -26,6 +26,8 @@ CFG::CFG::CFG(const std::set<std::string> n_terminal_set,
 		PARSE_CFG_STATUS_BODY		 // 解析产生式体状态
 	};
 
+	start_ = start;
+
 	int parse_status = PARSE_CFG_STATUS_HEADER;
 	std::string cfg_symbolic_head,  // 产生式头文法符号
 				cfg_symbolic_body;  // 产生式体文法符号
@@ -286,6 +288,8 @@ CFG::CFG &CFG::CFG::RemoveRecursive()
 			pb.push_back(new GrammarSymbolic("ε", SYMBOLIC_TYPE_TERMINAL));
 			new_product->AppendBody(pb);
 			this->AppendProduct(new_product); // 添加新的产生式
+
+			terminal_set_.insert("ε");
 
 			k++;
 		}

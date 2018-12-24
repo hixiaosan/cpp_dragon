@@ -33,6 +33,16 @@ namespace CFG {
 			return type_;
 		}
 
+		void SetName(std::string name)
+		{
+			name_ = name;
+		}
+
+		void SetType(SYMBOLIC_TYPE type)
+		{
+			type_ = type;
+		}
+
 	private:
 		std::string name_;	 // 符号名称
 		SYMBOLIC_TYPE type_; // 符号类型
@@ -106,8 +116,13 @@ namespace CFG {
 		/// 是否是文法符号
 		bool IsCFGSymbolic(const std::string &symbolic);
 
+		std::string StartSymbolic() { return start_; }
+
 		/// 获取文法符号类型
 		SYMBOLIC_TYPE GetSymbolicType(const std::string &symbolic);
+
+		/// 获取产生式列表
+		std::vector<std::shared_ptr<Production>> &Productions() { return productions_; }
 
 	public:
 		/// 移除左递归

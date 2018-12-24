@@ -116,10 +116,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp" />
+    <ClCompile Include="Lex.cpp" />
+    <ClCompile Include="LL1.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CFG.h" />
+    <ClInclude Include="Lex.h" />
+    <ClInclude Include="LL1.h" />
+    <ClInclude Include="Parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

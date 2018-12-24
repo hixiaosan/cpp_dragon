@@ -21,9 +21,27 @@
     <ClCompile Include="CFG.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="LL1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Lex.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CFG.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LL1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Lex.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
