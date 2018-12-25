@@ -112,11 +112,12 @@ AST LL1::Parse()
 	ll1_stack.push(cfg_->StartSymbolic()); // 文法开始符号
 
 	// 进入下一层语法栈
-	ast_stack.push_back(std::vector<void *>());
 
+	ast_stack.push_back(std::vector<void *>());
 	// 栈中的两个局部变量
-	ast_stack.back().push_back(cur_node);
 	ast_stack.back().push_back(0);
+	ast_stack.back().push_back(cur_node);
+	
 
 	size_t stack_deep = 0;
 	
@@ -129,38 +130,50 @@ AST LL1::Parse()
 
 	while (X != "$")
 	{
-		if (X == input_token->Name())
+		if (cfg_->IsTerminal(X))
 		{
-			ll1_stack.pop(); // 当前符号出栈
-			
-			input_token = lex_->FetchNext(); // 获取下一个输入符号
-
-			if (NULL == input_token)
+			if (X == input_token->Name())
 			{
-				throw std::runtime_error("词法分析失败");
+				ll1_stack.pop(); // 当前符号出栈
+
+				input_token = lex_->FetchNext(); // 获取下一个输入符号
+
+				if (NULL == input_token)
+				{
+					throw std::runtime_error("词法分析失败");
+				}
+			}
+			else if (X == "ε")
+			{
+				ll1_stack.pop(); // 当前符号出栈
+			}
+			else
+			{
+				throw std::runtime_error("语法分析错误");
 			}
 
-			// 索引右移动
-			ast_stack[ast_stack.size() - 2][1] = (void *)((int)ast_stack[ast_stack.size() - 2][1] + 1);
-			ASTNode *node = (ASTNode *)ast_stack[ast_stack.size() - 2][0];
-			int idx = (int)ast_stack[ast_stack.size() - 2][1];
-
-			while (node->nodes.size() == idx)
+			do
 			{
-				ast_stack.pop_back(); // 类似于返回
+				if (ast_stack.size() <= 1)
+				{
+					break;
+				}
+
 				// 索引右移动
-				ast_stack.back()[1] = (void *)((int)ast_stack[ast_stack.size() - 2][1] + 1);
-				node = (ASTNode *)ast_stack[ast_stack.size() - 2][0];
-				idx = (int)ast_stack[ast_stack.size() - 2][1];
-			}
-		}
-		else if (X == "ε")
-		{
-			ll1_stack.pop(); // 当前符号出栈
-		}
-		else if (cfg_->IsTerminal(X))
-		{
-			throw std::runtime_error("语法分析错误");
+				ast_stack.back()[0] = (void *)((int)ast_stack.back()[0] + 1);
+				int idx = (int)ast_stack.back()[0];
+				int parent_idx = (int)ast_stack[ast_stack.size() - 2][0];
+				ASTNode *node = (ASTNode *)ast_stack[ast_stack.size() - 2][parent_idx + 1];
+
+				if (node->nodes.size() == idx)
+				{
+					ast_stack.pop_back(); // 类似于返回
+					continue;
+				}
+				break;
+			} while (true);
+
+			
 		}
 		else if (cfg_->IsNTerminal(X)) // 如果是非终结符号
 		{
@@ -179,7 +192,14 @@ AST LL1::Parse()
 				ll1_stack.push(product_body[i]->Name());
 			}
 
-			ASTNode *node = (ASTNode *)ast_stack.back()[0];
+			int idx = (int)ast_stack.back()[0];
+			ASTNode *node = (ASTNode *)ast_stack.back()[idx + 1];
+
+			// 进入下一层语法栈
+			ast_stack.push_back(std::vector<void *>());
+
+			// 栈中的两个局部变量
+			ast_stack.back().push_back(0);
 
 			for (size_t i = 0; i < product_body.size(); i++)
 			{
@@ -187,15 +207,13 @@ AST LL1::Parse()
 				new_node->symbolic = product_body[i];
 				
 				node->nodes.push_back(new_node);
+				ast_stack.back().push_back(new_node);
 			}
 
 
-			// 进入下一层语法栈
-			ast_stack.push_back(std::vector<void *>());
-
-			// 栈中的两个局部变量
-			ast_stack.back().push_back(node->nodes[0]);
-			ast_stack.back().push_back(0);
+			
+			
+			
 
 			stack_deep++; // 栈深度添加
 		}
