@@ -59,6 +59,7 @@ int ASTWidth(ASTNode *node)
 {
 	if (node->nodes.size() == 0)
 	{
+		node->width - 1;
 		return 1;
 	}
 
@@ -67,6 +68,7 @@ int ASTWidth(ASTNode *node)
 	{
 		width += ASTWidth(n);
 	}
+	node->width = width;
 	return width;
 }
 
@@ -121,6 +123,30 @@ int AnsiToUnicode(LPWSTR wstrUnicode, LPCSTR szAnsi)
 	return dwMinSize;
 }
 
+int LeftWidth(ASTNode *node, int offset = 0)
+{
+	int left = offset;
+	bool hasMiddle = node->nodes.size() % 2;
+	for (size_t i = 0; i < node->nodes.size(); i++)
+	{
+		
+
+		if (i < node->nodes.size() / 2) // 在左边
+		{
+			left = min(left, LeftWidth(node->nodes[i], offset - 1));
+
+		}
+		else if (i == node->nodes.size() / 2 && hasMiddle) { // 在中间
+			LeftWidth(node->nodes[i], offset);
+		}
+		else { // 在右边
+			left = min(left, LeftWidth(node->nodes[i], offset + 1));
+		}
+	}
+
+	return left;
+}
+
 void MakeASTIMG(ASTNode *node, Gdiplus::Graphics &graphics, int center_x,  int deep = 0)
 {
 	FontFamily  fontFamily(L"Times New Roman");
@@ -143,33 +169,29 @@ void MakeASTIMG(ASTNode *node, Gdiplus::Graphics &graphics, int center_x,  int d
 
 	graphics.DrawString(wchar, -1, &font, rectF, &sf, &solidBrush);
 
+	if (node->nodes.size() == 1)
+	{
+		graphics.DrawLine(&pen, x + kRadii, deep * 100 + kNodeHeight, center_x + kNodeWidth + space, (deep + 1) * 100);
+
+
+		MakeASTIMG(node->nodes[0], graphics, center_x, deep + 1);
+		return;
+	}
+
 	int width = ASTWidth(node); // 当前节点宽度
 	int sum_width = 0;
-	int sum_width2 = 0;
 	bool lastInMid = false;
+	bool hasMiddle = node->nodes.size() % 2;
+
+	int left = abs(LeftWidth(node) * (kNodeWidth + space));
+	center_x -= left;
+
 	for (size_t i = 0; i < node->nodes.size(); i++)
 	{
 		int current_width = ASTWidth(node->nodes[i]);
-		float pos = (float)i - (float)node->nodes.size() / 2 + 0.5;
 		int cur_width = current_width * (kNodeWidth + space);
-		int to_centor_x = 0;
-
-		if (pos < 0) // 在左边
-		{
-			to_centor_x = center_x + (sum_width + cur_width / 2) * -1;
-		}
-		else if (pos == 0) { // 在中间
-			to_centor_x = center_x;
-			sum_width = (sum_width2 - width / 2) * (kNodeWidth + space);
-			lastInMid = true;
-		}
-		else { // 在右边
-			if (false == lastInMid) {
-				sum_width = 0;
-			}
-			to_centor_x = center_x + sum_width + cur_width / 2;
-		}
-
+		int left = abs(LeftWidth(node->nodes[i])) * (kNodeWidth + space);
+		int to_centor_x = center_x + (sum_width) + left;
 		
 		graphics.DrawLine(&pen, x + kRadii, deep * 100 + kNodeHeight, to_centor_x  + kNodeWidth + space, (deep + 1) * 100);
 
@@ -177,7 +199,6 @@ void MakeASTIMG(ASTNode *node, Gdiplus::Graphics &graphics, int center_x,  int d
 		MakeASTIMG(node->nodes[i], graphics, to_centor_x, deep + 1);
 
 		sum_width += cur_width;
-		sum_width2 += current_width;
 	}
 
 }

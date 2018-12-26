@@ -15,6 +15,7 @@ struct ASTNode
 {
 	CFG::GrammarSymbolic *symbolic; // 文法符号
 	std::vector<ASTNode *> nodes;	// 子节点
+	int width;
 };
 
 // LL(1) 语法分析
