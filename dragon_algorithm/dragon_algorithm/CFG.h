@@ -107,6 +107,15 @@ namespace CFG {
 		~CFG();
 
 	public:
+
+		std::set<std::string> Terminals()
+		{
+			std::set<std::string> terminals;
+			terminals.insert(n_terminal_set_.begin(), n_terminal_set_.end());
+			terminals.insert(terminal_set_.begin(), terminal_set_.end());
+			return terminals;
+		}
+
 		/// 是否是终结符号
 		bool IsTerminal(const std::string &symbolic);
 
@@ -131,7 +140,7 @@ namespace CFG {
 		/// 提取左公因子
 		CFG &TakeLeft();
 
-	private:
+	public:
 		void AppendProduct(std::shared_ptr<Production> product);
 
 	private:

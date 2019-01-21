@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "Lex.h"
 #include "LL1.h"
+#include "SLR.h"
 #include <memory>
 #include <Windows.h>
 #include <gdiplus.h>
@@ -59,7 +60,7 @@ int ASTWidth(ASTNode *node)
 {
 	if (node->nodes.size() == 0)
 	{
-		node->width - 1;
+		//node->width - 1;
 		return 1;
 	}
 
@@ -304,13 +305,36 @@ void TestParseLL1()
 
 }
 
+
+void TestParseSLR()
+{
+	// 产生式列表
+	const char *products = // "S -> E\n"
+		"E -> E + T | T\n"
+		"T -> T * F | F\n"
+		"F -> (E) | num";
+
+	// 非终结符号集合
+	std::set<std::string> n_terminal_set = {"E", "T", "F" };
+
+	// 终结符号集合
+	std::set<std::string> terminal_set = { "num", "+", "-", "*", "/", "(", ")" };
+	CFG::CFG cfg(n_terminal_set, terminal_set, products, "E");
+
+	char line[255] = { 0 };
+	cin.getline(line, sizeof(line));
+	SLR slr(&cfg, new ExpLex(line));
+
+	slr.Parse(); // 解析成功生成语法分析树
+}
+
 int main()
 {
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR           gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 	//TestParse();
-	TestParseLL1();
+	TestParseSLR();
 	system("pause");
 	
 	return 0;
